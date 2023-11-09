@@ -1,6 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import HtmlWebpackPlugin from 'html-webpack-plugin'
+import HtmlWebpackPlugin from "html-webpack-plugin";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isRunningWebpack = !!process.env.WEBPACK;
@@ -18,16 +18,55 @@ const config = {
   entry: {
     main: "./src/index",
   },
-  plugins: [
-    ...(isRunningWebpack ? [
-      new HtmlWebpackPlugin(),
-    ] : [])
-  ],
-  ...(isRunningRspack ? {
-    builtins: {
-      html: [{}],
-    },
-  } : {}),
+  module: {
+    rules: [
+      {
+        test: /\.(js|mjs|cjs|jsx)$|\.(ts|mts|cts|tsx)$/,
+        loader: path.join(__dirname, "diy.js"),
+      },
+      {
+        test: /\.(js|mjs|cjs|jsx)$|\.(ts|mts|cts|tsx)$/,
+        type: "javascript/auto",
+        use: [
+          {
+            loader: "builtin:swc-loader",
+            options: {
+              jsc: {
+                externalHelpers: true,
+                parser: {
+                  tsx: true,
+                  syntax: "typescript",
+                  decorators: true,
+                },
+                preserveAllComments: true,
+                transform: {
+                  react: {
+                    development: true,
+                    refresh: true,
+                    runtime: "automatic",
+                  },
+                },
+              },
+              isModule: "unknown",
+              minify: false,
+              sourceMaps: true,
+              inlineSourcesContent: true,
+              rspackExperiments: {
+                import: [
+                  {
+                    libraryName: "antd",
+                    libraryDirectory: "es",
+                    style: "css",
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [new HtmlWebpackPlugin()],
   output: {
     clean: true,
     path: isRunningWebpack
@@ -37,7 +76,7 @@ const config = {
   },
   experiments: {
     css: true,
-  }
+  },
 };
 
 export default config;

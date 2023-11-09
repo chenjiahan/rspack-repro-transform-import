@@ -1,3 +1,3 @@
-import('./render').then(exports => {
-    exports.render()
-})
+import App from "./App";
+
+console.log(App);
